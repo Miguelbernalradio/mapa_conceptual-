@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mapa Conceptual - Gestión del Talento Humano</title>
+    <!-- Incluir Mermaid.js para diagramas -->
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <!-- Incluir D3.js para diagrama de nodos interactivo -->
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1300px;
+            margin: 0 auto;
+        }
+
+        /* Encabezado */
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .header h1 {
+            font-size: 2.2em;
+            color: #fff;
+            margin-bottom: 10px;
+        }
+
+        .header h1 span {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .header p {
+            color: #ccc;
+            font-size: 1em;
+        }
+
+        .badge {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            margin-top: 10px;
+        }
+
+        /* Pestañas */
+        .tabs {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .tab-btn {
+            background: rgba(255,255,255,0.1);
+            border: none;
+            padding: 10px 25px;
+            border-radius: 30px;
+            color: white;
+            cursor: pointer;
+            font-size: 1em;
+            transition: all 0.3s ease;
+        }
+
+        .tab-btn:hover {
+            background: #667eea;
+            transform: translateY(-2px);
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            box-shadow: 0 5px 15px rgba(102,126,234,0.4);
+        }
+
+        /* Contenedor de diagramas */
+        .diagram-container {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            min-height: 550px;
+        }
+
+        /* Ocultar/mostrar pestañas */
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Estilos para el diagrama Mermaid */
+        .mermaid {
+            display: flex;
+            justify-content: center;
+            overflow-x: auto;
+        }
+
+        /* Estilos para el gráfico D3 */
+        .d3-graph {
+            width: 100%;
+            height: 550px;
+            background: #fafafa;
+            border-radius: 15px;
+            overflow: hidden;
+        }
+
+        .node circle {
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .node circle:hover {
+            filter: brightness(0.9);
+            stroke-width: 3px;
+        }
+
+        .node text {
+            font-size: 11px;
+            font-weight: bold;
+            text-anchor: middle;
+            dominant-baseline: middle;
+            pointer-events: none;
+        }
+
+        .link {
+            stroke: #999;
+            stroke-opacity: 0.6;
+            stroke-width: 2px;
+        }
+
+        .link-label {
+            font-size: 9px;
+            fill: #666;
+            font-style: italic;
+        }
+
+        /* Leyenda */
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255,255,255,0.1);
+            padding: 5px 12px;
+            border-radius: 20px;
+            color: white;
+            font-size: 0.8em;
+        }
+
+        .legend-color {
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: #888;
+            font-size: 0.8em;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header h1 { font-size: 1.5em; }
+            .tab-btn { padding: 8px 15px; font-size: 0.8em; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Encabezado -->
+        <div class="header">
+            <h1>🗺️ <span>Mapa Conceptual</span></h1>
+            <p>Gestión del Talento Humano - Unidad 1</p>
+            <div class="badge">Gerencia del Factor Humano | Universidad ECCI</div>
+        </div>
+
+        <!-- Pestañas de visualización -->
+        <div class="tabs">
+            <button class="tab-btn active" onclick="showTab('mermaid-tab')">📊 Diagrama Estructurado</button>
+            <button class="tab-btn" onclick="showTab('d3-tab')">🔗 Mapa Interactivo (Nodos)</button>
+        </div>
+
+        <!-- Contenido: Diagrama Mermaid -->
+        <div id="mermaid-tab" class="tab-content active">
+            <div class="diagram-container">
+                <pre class="mermaid">
+graph TB
+    %% Estilos
+    classDef central fill:#1a5276,stroke:#0d3b5e,stroke-width:2px,color:#fff
+    classDef proceso fill:#2980b9,stroke:#1a5276,stroke-width:2px,color:#fff
+    classDef sub fill:#27ae60,stroke:#1e8449,stroke-width:2px,color:#fff
+    classDef teoria fill:#e74c3c,stroke:#c0392b,stroke-width:2px,color:#fff
+    classDef metodo fill:#f39c12,stroke:#d68910,stroke-width:2px,color:#fff
+    classDef detalle fill:#8e44ad,stroke:#6c3483,stroke-width:2px,color:#fff
+
+    %% NODO CENTRAL
+    GTH["🏆 GESTIÓN DEL<br>TALENTO HUMANO<br>━━━━━━━━━━━<br>Las personas son el activo<br>más importante de la organización"]
+    class GTH central
+
+    %% PRIMER NIVEL - PROCESOS PRINCIPALES
+    Reclutamiento["📢 RECLUTAMIENTO<br>━━━━━━━━━━━<br>Atraer candidatos<br>calificados"]
+    Seleccion["🔍 SELECCIÓN<br>━━━━━━━━━━━<br>Elegir al candidato<br>ideal"]
+    DisenoCargos["📋 DISEÑO DE CARGOS<br>━━━━━━━━━━━<br>Estructurar puestos<br>de trabajo"]
+    Motivacion["💡 MOTIVACIÓN<br>━━━━━━━━━━━<br>Impulsar el<br>desempeño"]
+    DesarrolloPersonas["🎓 DESARROLLO DE PERSONAS<br>━━━━━━━━━━━<br>Formación y<br>crecimiento"]
+    DesarrolloOrg["🏢 DESARROLLO ORGANIZACIONAL<br>━━━━━━━━━━━<br>Cambio y mejora<br>continua"]
+
+    class Reclutamiento,Seleccion,DisenoCargos,DesarrolloPersonas proceso
+    class Motivacion teoria
+    class DesarrolloOrg detalle
+
+    %% CONEXIONES PRIMER NIVEL
+    GTH -->|Incluye| Reclutamiento
+    GTH -->|Incluye| Seleccion
+    GTH -->|Incluye| DisenoCargos
+    GTH -->|Se basa en| Motivacion
+    GTH -->|Impulsa| DesarrolloPersonas
+    GTH -->|Contribuye a| DesarrolloOrg
+
+    %% SEGUNDO NIVEL - RECLUTAMIENTO
+    ReclutamientoInt["Interno<br>━━━━━━<br>• Más económico<br>• Más rápido<br>• Motiva al personal"]
+    ReclutamientoExt["Externo<br>━━━━━━<br>• Trae sangre nueva<br>• Nuevas experiencias<br>• Enriquece talento"]
+    
+    class ReclutamientoInt,ReclutamientoExt sub
+    
+    Reclutamiento -->|Puede ser| ReclutamientoInt
+    Reclutamiento -->|Puede ser| ReclutamientoExt
+    ReclutamientoInt -->|Alimenta| Seleccion
+    ReclutamientoExt -->|Alimenta| Seleccion
+
+    %% SEGUNDO NIVEL - DISEÑO DE CARGOS
+    Descripcion["DESCRIPCIÓN<br>━━━━━━<br>• Tareas<br>• Funciones<br>• Responsabilidades"]
+    Analisis["ANÁLISIS<br>━━━━━━<br>• Requisitos intelectuales<br>• Requisitos físicos<br>• Condiciones de trabajo"]
+    
+    class Descripcion,Analisis sub
+    
+    DisenoCargos -->|Implica| Descripcion
+    DisenoCargos -->|Implica| Analisis
+    Descripcion -->|Base para| Seleccion
+
+    %% TERCER NIVEL - MÉTODOS DE ANÁLISIS
+    MetodoObs["👁️ Observación<br>Directa"]
+    MetodoCuest["📋 Cuestionario"]
+    MetodoEnt["🎙️ Entrevista"]
+    MetodoDiario["📓 Diario de<br>Actividades"]
+    MetodoInc["⚡ Incidentes<br>Críticos"]
+    
+    class MetodoObs,MetodoCuest,MetodoEnt,MetodoDiario,MetodoInc metodo
+    
+    Analisis -->|Utiliza| MetodoObs
+    Analisis -->|Utiliza| MetodoCuest
+    Analisis -->|Utiliza| MetodoEnt
+    Analisis -->|Utiliza| MetodoDiario
+    Analisis -->|Utiliza| MetodoInc
+
+    %% SEGUNDO NIVEL - MOTIVACIÓN
+    Maslow["📐 PIRÁMIDE DE MASLOW<br>━━━━━━<br>Autorrealización<br>Reconocimiento<br>Social<br>Seguridad<br>Fisiológica"]
+    McClelland["🎯 MCCLELLAND<br>━━━━━━<br>Logro<br>Poder<br>Afiliación"]
+    
+    class Maslow,McClelland teoria
+    
+    Motivacion -->|Explicada por| Maslow
+    Motivacion -->|Explicada por| McClelland
+    Motivacion -->|Influye en| DisenoCargos
+
+    %% SEGUNDO NIVEL - DESARROLLO DE PERSONAS
+    Entrenamiento["ENTRENAMIENTO<br>━━━━━━<br>• Corta duración<br>• Habilidades específicas<br>• Tareas concretas"]
+    Capacitacion["CAPACITACIÓN<br>━━━━━━<br>• Larga duración<br>• Desarrollo profesional<br>• Conocimiento integral"]
+    
+    class Entrenamiento,Capacitacion sub
+    
+    DesarrolloPersonas -->|Incluye| Entrenamiento
+    DesarrolloPersonas -->|Incluye| Capacitacion
+
+    %% TERCER NIVEL - ETAPAS DEL ENTRENAMIENTO
+    Etapa1["1. Diagnóstico"]
+    Etapa2["2. Diseño"]
+    Etapa3["3. Implementación"]
+    Etapa4["4. Evaluación"]
+    
+    class Etapa1,Etapa2,Etapa3,Etapa4 metodo
+    
+    Entrenamiento -->|Etapas| Etapa1
+    Etapa1 --> Etapa2 --> Etapa3 --> Etapa4
+
+    %% SEGUNDO NIVEL - DESARROLLO ORGANIZACIONAL
+    Innovacion["💡 INNOVACIÓN<br>━━━━━━<br>• Nuevas ideas<br>• Nuevos métodos<br>• Ventaja competitiva"]
+    Cambio["🔄 CAMBIO ORGANIZACIONAL<br>━━━━━━<br>• Descongelamiento<br>• Cambio<br>• Nuevo congelamiento"]
+    
+    class Innovacion,Cambio sub
+    
+    DesarrolloOrg -->|Fomenta| Innovacion
+    DesarrolloOrg -->|Implementa| Cambio
+    Innovacion -->|Genera| DesarrolloOrg
+
+    %% NOTA FINAL
+    Nota["📌 NOTA: Las personas son SOCIOS, no recursos<br>Adaptado de Chiavenato (2009)"]
+    class Nota detalle
+    GTH -.-> Nota
+                </pre>
+            </div>
+        </div>
+
+        <!-- Contenido: Gráfico D3 interactivo -->
+        <div id="d3-tab" class="tab-content">
+            <div class="diagram-container">
+                <div id="d3-graph" class="d3-graph"></div>
+            </div>
+        </div>
+
+        <!-- Leyenda -->
+        <div class="legend">
+            <div class="legend-item"><div class="legend-color" style="background:#1a5276;"></div> Concepto Central</div>
+            <div class="legend-item"><div class="legend-color" style="background:#2980b9;"></div> Proceso Principal</div>
+            <div class="legend-item"><div class="legend-color" style="background:#27ae60;"></div> Subconcepto</div>
+            <div class="legend-item"><div class="legend-color" style="background:#e74c3c;"></div> Teoría</div>
+            <div class="legend-item"><div class="legend-color" style="background:#f39c12;"></div> Método/Herramienta</div>
+            <div class="legend-item"><div class="legend-color" style="background:#8e44ad;"></div> Estrategia</div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p>📖 Basado en Chiavenato (2009) y contenido de la Unidad 1 - Gerencia del Factor Humano</p>
+            <p>🎓 Universidad ECCI - Dirección de Virtualidad | 2026</p>
+        </div>
+    </div>
+
+    <script>
+        // Inicializar Mermaid
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: 'base',
+            themeVariables: {
+                'background': '#ffffff',
+                'primaryColor': '#1a5276',
+                'primaryTextColor': '#fff',
+                'primaryBorderColor': '#0d3b5e',
+                'lineColor': '#666666',
+                'secondaryColor': '#2980b9',
+                'tertiaryColor': '#f9f9f9'
+            },
+            flowchart: {
+                useMaxWidth: true,
+                htmlLabels: true,
+                curve: 'basis',
+                padding: 20
+            }
+        });
+
+        // Función para cambiar pestañas
+        function showTab(tabId) {
+            // Ocultar todas
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            // Desactivar todos los botones
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            // Mostrar la seleccionada
+            document.getElementById(tabId).classList.add('active');
+            // Activar botón correspondiente
+            event.target.classList.add('active');
+            
+            // Si es la pestaña D3, inicializar el gráfico
+            if (tabId === 'd3-tab') {
+                initD3Graph();
+            }
+        }
+
+        // Datos para el gráfico D3
+        const nodes = [
+            { id: "GTH", name: "GESTIÓN DEL\nTALENTO HUMANO", category: "central", desc: "Las personas son el activo más importante" },
+            { id: "Reclutamiento", name: "RECLUTAMIENTO", category: "proceso", desc: "Atraer candidatos calificados" },
+            { id: "Seleccion", name: "SELECCIÓN", category: "proceso", desc: "Elegir al candidato ideal" },
+            { id: "DisenoCargos", name: "DISEÑO DE\nCARGOS", category: "proceso", desc: "Estructurar puestos de trabajo" },
+            { id: "Motivacion", name: "MOTIVACIÓN", category: "teoria", desc: "Impulsar el desempeño" },
+            { id: "DesarrolloPersonas", name: "DESARROLLO DE\nPERSONAS", category: "proceso", desc: "Formación y crecimiento" },
+            { id: "DesarrolloOrg", name: "DESARROLLO\nORGANIZACIONAL", category: "estrategia", desc: "Cambio y mejora continua" },
+            { id: "ReclutamientoInt", name: "RECLUTAMIENTO\nINTERNO", category: "sub", desc: "Promoción interna" },
+            { id: "ReclutamientoExt", name: "RECLUTAMIENTO\nEXTERNO", category: "sub", desc: "Sangre nueva" },
+            { id: "Descripcion", name: "DESCRIPCIÓN", category: "sub", desc: "Tareas y funciones" },
+            { id: "Analisis", name: "ANÁLISIS", category: "sub", desc: "Requisitos del puesto" },
+            { id: "Maslow", name: "PIRÁMIDE DE\nMASLOW", category: "teoria", desc: "Jerarquía de necesidades" },
+            { id: "McClelland", name: "MCCLELLAND", category: "teoria", desc: "Logro, poder, afiliación" },
+            { id: "Entrenamiento", name: "ENTRENAMIENTO", category: "sub", desc: "Habilidades específicas" },
+            { id: "Capacitacion", name: "CAPACITACIÓN", category: "sub", desc: "Desarrollo profesional" },
+            { id: "Innovacion", name: "INNOVACIÓN", category: "sub", desc: "Ventaja competitiva" }
+        ];
+
+        const links = [
+            { source: "GTH", target: "Reclutamiento", label: "Incluye" },
+            { source: "GTH", target: "Seleccion", label: "Incluye" },
+            { source: "GTH", target: "DisenoCargos", label: "Incluye" },
+            { source: "GTH", target: "Motivacion", label: "Se basa en" },
+            { source: "GTH", target: "DesarrolloPersonas", label: "Impulsa" },
+            { source: "GTH", target: "DesarrolloOrg", label: "Contribuye" },
+            { source: "Reclutamiento", target: "ReclutamientoInt", label: "Puede ser" },
+            { source: "Reclutamiento", target: "ReclutamientoExt", label: "Puede ser" },
+            { source: "ReclutamientoInt", target: "Seleccion", label: "Alimenta" },
+            { source: "ReclutamientoExt", target: "Seleccion", label: "Alimenta" },
+            { source: "DisenoCargos", target: "Descripcion", label: "Implica" },
+            { source: "DisenoCargos", target: "Analisis", label: "Implica" },
+            { source: "Motivacion", target: "Maslow", label: "Explicada por" },
+            { source: "Motivacion", target: "McClelland", label: "Explicada por" },
+            { source: "DesarrolloPersonas", target: "Entrenamiento", label: "Incluye" },
+            { source: "DesarrolloPersonas", target: "Capacitacion", label: "Incluye" },
+            { source: "DesarrolloOrg", target: "Innovacion", label: "Fomenta" }
+        ];
+
+        // Colores por categoría
+        const categoryColors = {
+            central: "#1a5276",
+            proceso: "#2980b9",
+            sub: "#27ae60",
+            teoria: "#e74c3c",
+            metodo: "#f39c12",
+            estrategia: "#8e44ad"
+        };
+
+        // Inicializar gráfico D3
+        function initD3Graph() {
+            // Limpiar contenedor
+            d3.select("#d3-graph").selectAll("*").remove();
+            
+            const width = document.getElementById("d3-graph").clientWidth;
+            const height = 550;
+            
+            const svg = d3.select("#d3-graph")
+                .append("svg")
+                .attr("width", width)
+                .attr("height", height)
+                .append("g");
+            
+            // Escala de zoom
+            const zoom = d3.zoom()
+                .scaleExtent([0.5, 2])
+                .on("zoom", (event) => {
+                    svg.attr("transform", event.transform);
+                });
+            
+            d3.select("#d3-graph svg").call(zoom);
+            
+            // Simulación de fuerzas
+            const simulation = d3.forceSimulation(nodes)
+                .force("link", d3.forceLink(links).id(d => d.id).distance(120))
+                .force("charge", d3.forceManyBody().strength(-300))
+                .force("center", d3.forceCenter(width / 2, height / 2));
+            
+            // Dibujar líneas (conexiones)
+            const link = svg.append("g")
+                .selectAll("line")
+                .data(links)
+                .enter()
+                .append("line")
+                .attr("class", "link")
+                .attr("stroke", "#999")
+                .attr("stroke-width", 2)
+                .attr("stroke-opacity", 0.6);
+            
+            // Etiquetas de las líneas
+            const linkLabels = svg.append("g")
+                .selectAll("text")
+                .data(links)
+                .enter()
+                .append("text")
+                .attr("class", "link-label")
+                .text(d => d.label);
+            
+            // Dibujar nodos
+            const node = svg.append("g")
+                .selectAll("g")
+                .data(nodes)
+                .enter()
+                .append("g")
+                .call(drag(simulation));
+            
+            node.append("circle")
+                .attr("r", 35)
+                .attr("fill", d => categoryColors[d.category])
+                .attr("stroke", "#fff")
+                .attr("stroke-width", 2)
+                .attr("cursor", "pointer");
+            
+            node.append("text")
+                .attr("dy", "0.3em")
+                .attr("text-anchor", "middle")
+                .attr("fill", "white")
+                .attr("font-size", "10px")
+                .attr("font-weight", "bold")
+                .text(d => d.name);
+            
+            // Tooltip al pasar el mouse
+            node.append("title")
+                .text(d => d.desc || "Más información");
+            
+            // Actualizar posiciones en cada tick
+            simulation.on("tick", () => {
+                link
+                    .attr("x1", d => d.source.x)
+                    .attr("y1", d => d.source.y)
+                    .attr("x2", d => d.target.x)
+                    .attr("y2", d => d.target.y);
+                
+                linkLabels
+                    .attr("x", d => (d.source.x + d.target.x) / 2)
+                    .attr("y", d => (d.source.y + d.target.y) / 2 - 5);
+                
+                node.attr("transform", d => `translate(${d.x},${d.y})`);
+            });
+            
+            // Función de arrastre
+            function drag(simulation) {
+                function dragstarted(event) {
+                    if (!event.active) simulation.alphaTarget(0.3).restart();
+                    event.subject.fx = event.subject.x;
+                    event.subject.fy = event.subject.y;
+                }
+                
+                function dragged(event) {
+                    event.subject.fx = event.x;
+                    event.subject.fy = event.y;
+                }
+                
+                function dragended(event) {
+                    if (!event.active) simulation.alphaTarget(0);
+                    event.subject.fx = null;
+                    event.subject.fy = null;
+                }
+                
+                return d3.drag()
+                    .on("start", dragstarted)
+                    .on("drag", dragged)
+                    .on("end", dragended);
+            }
+        }
+        
+        // Inicializar D3 cuando se abre la pestaña
+        window.addEventListener('load', () => {
+            // Inicializar Mermaid ya está
+            setTimeout(() => {
+                if (document.getElementById('d3-tab').classList.contains('active')) {
+                    initD3Graph();
+                }
+            }, 500);
+        });
+    </script>
+</body>
+</html>
